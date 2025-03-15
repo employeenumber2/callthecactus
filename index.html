@@ -5,19 +5,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Call the Cowboy</title>
   <style>
-    /* Your existing styles */
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%; }
-    body {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #fff;
-      background-image: url('saguaro2.png');
-      background-repeat: repeat;
-      background-size: auto;
-      -webkit-overflow-scrolling: touch;
+    /* Reset default styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
+    html, body {
+      height: 100%;
+    }
+    /* The map fills the entire viewport */
+    #map {
+      height: 100%;
+      width: 100%;
+    }
+    /* Position the buttons container in the center, floating over the map */
+    #button-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      z-index: 10;
+    }
+    /* Button styling */
     .cta-button {
       background-color: orange;
       color: white;
@@ -29,13 +40,53 @@
       text-transform: uppercase;
       transition: background-color 0.3s ease;
       -webkit-appearance: none;
+      margin-bottom: 20px; /* spacing between buttons */
     }
-    .cta-button:active { background-color: darkorange; }
+    .cta-button:active {
+      background-color: darkorange;
+    }
   </style>
 </head>
 <body>
-  <a href="tel:+14356024304">
-    <button class="cta-button">Call the Cowboy</button>
-  </a>
+  <!-- The map container -->
+  <div id="map"></div>
+
+  <!-- Buttons container floating above the map -->
+  <div id="button-container">
+    <!-- "Call the Cowboy" button with the phone number -->
+    <a href="tel:+14356024304">
+      <button class="cta-button">Call the Cowboy</button>
+    </a>
+    <br>
+    <!-- "About the Cowboy" button linking to about.html -->
+    <a href="about.html">
+      <button class="cta-button">About the Cowboy</button>
+    </a>
+  </div>
+
+  <!-- Google Maps JavaScript API -->
+  <script>
+    function initMap() {
+      // Set the coordinates (update these to your desired location)
+      var location = { lat: 40.723942, lng: -111.544353 };
+      
+      // Initialize the map
+      var map = new google.maps.Map(document.getElementById('map'), {
+        center: location,
+        zoom: 12,
+        disableDefaultUI: true
+      });
+      
+      // Optionally, add a marker at the specified location
+      var marker = new google.maps.Marker({
+        position: location,
+        map: map
+      });
+    }
+  </script>
+  <!-- Remember to replace YOUR_API_KEY with your actual Google Maps API key -->
+  <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCy0CmR2bZF9YBNfSGX5hZ-wK1MD1AwOu0&callback=initMap">
+  </script>
 </body>
 </html>
