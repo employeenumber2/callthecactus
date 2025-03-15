@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Call the Cowboy</title>
+  <style>
+    /* Reset default margins/padding */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    /* Full height for proper centering */
+    html, body {
+      height: 100%;
+    }
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #fff;
+      /* Replace 'saguaro-tile.png' with your cactus pattern image URL */
+      background-image: url('saguaro-tile.png');
+      background-repeat: repeat;
+      background-size: auto;
+      /* Ensures smooth scrolling on iOS */
+      -webkit-overflow-scrolling: touch;
+    }
+    /* Style for the button */
+    .cta-button {
+      background-color: orange;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      border-radius: 5px;
+      text-transform: uppercase;
+      transition: background-color 0.3s ease;
+      /* Remove default styling on iOS */
+      -webkit-appearance: none;
+    }
+    .cta-button:active {
+      background-color: darkorange;
+    }
+  </style>
+</head>
+<body>
+  <button class="cta-button">Call the Cowboy</button>
+</body>
+</html>
