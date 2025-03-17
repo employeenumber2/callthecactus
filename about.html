@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About the Cowboy</title>
+  <!-- Include Font Awesome for social icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+  <style>
+    /* Reset default styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      height: 100%;
+    }
+    /* Fullscreen map container */
+    #map {
+      height: 100%;
+      width: 100%;
+    }
+    /* Floating container for the text box and social icons */
+    #text-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 255, 255, 0.9);
+      padding: 20px;
+      max-width: 80%;
+      border-radius: 8px;
+      text-align: center;
+      z-index: 10;
+    }
+    /* Social icons styling */
+    #social-container {
+      margin-top: 20px;
+      text-align: center;
+    }
+    #social-container a {
+      margin: 0 10px;
+      color: #333;
+      font-size: 1.5rem;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    #social-container a:hover {
+      color: orange;
+    }
+  </style>
+</head>
+<body>
+  <!-- Google Map container -->
+  <div id="map"></div>
+
+  <!-- Floating text box with filler text and social icons -->
+  <div id="text-container">
+    <p>
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer non dapibus lacus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Vestibulum sagittis odio sit amet dui lobortis, in feugiat risus aliquam. Mauris a orci ut nisi ultrices tempus. Sed bibendum, justo eget dictum elementum, lorem sem interdum sapien, ac egestas velit velit nec sapien. Suspendisse potenti. Quisque venenatis nisl sit amet elit tristique, et convallis erat hendrerit. Vivamus dignissim lectus a quam imperdiet, in facilisis nulla tincidunt.
+    </p>
+    <div id="social-container">
+      <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+      <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+      <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+      <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+      <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+    </div>
+  </div>
+
+  <!-- Google Maps JavaScript API -->
+  <script>
+    function initMap() {
+      // Set the coordinates (update these as needed)
+      var location = { lat: 37.7749, lng: -122.4194 };
+      var map = new google.maps.Map(document.getElementById('map'), {
+        center: location,
+        zoom: 12,
+        disableDefaultUI: true
+      });
+      // Optionally add a marker
+      var marker = new google.maps.Marker({
+        position: location,
+        map: map
+      });
+    }
+  </script>
+  <!-- Replace YOUR_API_KEY with your actual API key -->
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap"></script>
+</body>
+</html>
