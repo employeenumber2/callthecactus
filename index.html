@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Call the Cactus</title>
   <style>
     * {
@@ -43,6 +43,16 @@
     .cta-button:active {
       background-color: darkorange;
     }
+    .info-window {
+      font-family: sans-serif;
+    }
+    .menu-buttons {
+      margin-top: 10px;
+    }
+    .menu-buttons a {
+      text-decoration: none;
+      margin: 0 5px;
+    }
   </style>
 </head>
 <body>
@@ -65,8 +75,8 @@
   <script>
     function initMap() {
       const map = new google.maps.Map(document.getElementById("map"), {
-        zoom: 4,
-        center: { lat: 39.5, lng: -98.35 }, // Approximate center of US
+        zoom: 10,
+        center: { lat: 40.7, lng: -111.8 },
         disableDefaultUI: true
       });
 
@@ -74,23 +84,14 @@
         { lat: 40.63187478288313, lng: -111.488077538129840, title: "Hopkins" },
         { lat: 40.79079537119528, lng: -111.8870219260070734, title: "Cosby" },
         { lat: 40.66657863620859, lng: -111.4940910476343136, title: "Tanner" },
-        { lat: 40.65040926474864, lng: -111.3141574976087539, title: "Hennesy" },
+        { lat: 40.65040926474864, lng: -111.3141574976087539, title: "Hennessy" },
         { lat: 40.70017011307595, lng: -111.5490344880542347, title: "Barrick" },
-        { lat: 40.7672909767582, lng: -111.5279312398168232, title: "Goldsmith" },
+        { lat: 40.7672909767582, lng: -111.5279312398168232, title: "Goldsmith" }
       ];
 
       const bounds = new google.maps.LatLngBounds();
-
-      locations.forEach(loc => {
-        const marker = new google.maps.Marker({
-          position: { lat: loc.lat, lng: loc.lng },
-          map,
-          title: loc.title
-        });
-        bounds.extend(marker.getPosition());
-      });
-
-      map.fitBounds(bounds);
+      let infoWindows = [];
+      let showTitles = false;
 
       const menu = document.getElementById("button-container");
       let timeout;
@@ -103,17 +104,63 @@
         clearTimeout(timeout);
         timeout = setTimeout(() => {
           menu.style.opacity = 1;
-        }, 1000); // 1 second after interaction stops
+        }, 1000);
       }
 
       map.addListener("dragstart", hideMenu);
       map.addListener("zoom_changed", hideMenu);
       map.addListener("idle", showMenu);
+
+      // Toggle all titles on map click
+      map.addListener("click", () => {
+        infoWindows.forEach(iw => iw.close());
+        if (!showTitles) {
+          locations.forEach((loc, index) => {
+            const iw = new google.maps.InfoWindow({
+              content: `<div class="info-window"><strong>${loc.title}</strong></div>`
+            });
+            iw.open(map, markers[index]);
+            infoWindows[index] = iw;
+          });
+        } else {
+          infoWindows.forEach(iw => iw.close());
+        }
+        showTitles = !showTitles;
+      });
+
+      const markers = locations.map((loc, i) => {
+        const marker = new google.maps.Marker({
+          position: { lat: loc.lat, lng: loc.lng },
+          map,
+          title: loc.title
+        });
+        bounds.extend(marker.getPosition());
+
+        const infoWindow = new google.maps.InfoWindow({
+          content: `<div class="info-window">
+                      <strong>${loc.title}</strong>
+                      <div class="menu-buttons">
+                        <a href="#">Project Info</a> |
+                        <a href="tel:+14356024304">Call</a> |
+                        <a href="sms:+14356024304">Text</a>
+                      </div>
+                    </div>`
+        });
+
+        marker.addListener("click", () => {
+          infoWindows.forEach(iw => iw.close());
+          infoWindow.open(map, marker);
+          infoWindows[i] = infoWindow;
+        });
+
+        return marker;
+      });
+
+      map.fitBounds(bounds);
     }
   </script>
-  <script
-    async
-    defer
+
+  <script async defer
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCy0CmR2bZF9YBNfSGX5hZ-wK1MD1AwOu0&callback=initMap">
   </script>
 </body>
