@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Call the Cactus</title>
   <style>
-    /* Reset default styles */
     * {
       margin: 0;
       padding: 0;
@@ -14,12 +13,10 @@
     html, body {
       height: 100%;
     }
-    /* The map fills the entire viewport */
     #map {
       height: 100%;
       width: 100%;
     }
-    /* Position the buttons container in the center, floating over the map */
     #button-container {
       position: absolute;
       top: 50%;
@@ -27,8 +24,9 @@
       transform: translate(-50%, -50%);
       text-align: center;
       z-index: 10;
+      transition: opacity 0.5s ease;
+      opacity: 1;
     }
-    /* Button styling */
     .cta-button {
       background-color: orange;
       color: white;
@@ -40,7 +38,7 @@
       text-transform: uppercase;
       transition: background-color 0.3s ease;
       -webkit-appearance: none;
-      margin-bottom: 20px; /* spacing between buttons */
+      margin-bottom: 20px;
     }
     .cta-button:active {
       background-color: darkorange;
@@ -48,49 +46,77 @@
   </style>
 </head>
 <body>
-  <!-- The map container -->
   <div id="map"></div>
 
-  <!-- Buttons container floating above the map -->
   <div id="button-container">
-    <!-- "Call the Cactus" button with the phone number -->
     <a href="tel:+14356024304">
       <button class="cta-button">Call the Cactus</button>
     </a>
-    <br>
-    <!-- "Text the Cactus" button with SMS functionality -->
+    <br />
     <a href="sms:+14356024304">
       <button class="cta-button">Text the Cactus</button>
     </a>
-    <br>
-    <!-- "Or... Learn More" button linking to about.html -->
+    <br />
     <a href="about.html">
       <button class="cta-button">Or... Learn More</button>
     </a>
   </div>
 
-  <!-- Google Maps JavaScript API -->
   <script>
     function initMap() {
-      // Set the coordinates (update these to your desired location)
-      var location = { lat: 40.54290399632471, lng: -111.98580577429156 };
-      
-      // Initialize the map
-      var map = new google.maps.Map(document.getElementById('map'), {
-        center: location,
-        zoom: 8,
+      const map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 4,
+        center: { lat: 39.5, lng: -98.35 }, // Approximate center of US
         disableDefaultUI: true
       });
-      
-      // Optionally, add a marker at the specified location
-      var marker = new google.maps.Marker({
-        position: location,
-        map: map
+
+      const locations = [
+        { lat: 40.5429, lng: -111.9858, title: "Salt Lake City, UT" },
+        { lat: 34.0522, lng: -118.2437, title: "Los Angeles, CA" },
+        { lat: 36.1699, lng: -115.1398, title: "Las Vegas, NV" },
+        { lat: 39.7392, lng: -104.9903, title: "Denver, CO" },
+        { lat: 47.6062, lng: -122.3321, title: "Seattle, WA" },
+        { lat: 32.7767, lng: -96.7970, title: "Dallas, TX" },
+        { lat: 41.8781, lng: -87.6298, title: "Chicago, IL" },
+        { lat: 40.7128, lng: -74.0060, title: "New York, NY" },
+        { lat: 37.7749, lng: -122.4194, title: "San Francisco, CA" }
+      ];
+
+      const bounds = new google.maps.LatLngBounds();
+
+      locations.forEach(loc => {
+        const marker = new google.maps.Marker({
+          position: { lat: loc.lat, lng: loc.lng },
+          map,
+          title: loc.title
+        });
+        bounds.extend(marker.getPosition());
       });
+
+      map.fitBounds(bounds);
+
+      const menu = document.getElementById("button-container");
+      let timeout;
+
+      function hideMenu() {
+        menu.style.opacity = 0;
+      }
+
+      function showMenu() {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+          menu.style.opacity = 1;
+        }, 1000); // 1 second after interaction stops
+      }
+
+      map.addListener("dragstart", hideMenu);
+      map.addListener("zoom_changed", hideMenu);
+      map.addListener("idle", showMenu);
     }
   </script>
-  <!-- Remember to replace YOUR_API_KEY with your actual Google Maps API key -->
-  <script async defer
+  <script
+    async
+    defer
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCy0CmR2bZF9YBNfSGX5hZ-wK1MD1AwOu0&callback=initMap">
   </script>
 </body>
