@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Call the Cactus</title>
   <style>
     * {
@@ -12,20 +12,18 @@
     }
     html, body {
       height: 100%;
+      overflow: hidden;
     }
     #map {
       height: 100%;
       width: 100%;
     }
-    #button-container {
+    #main-call-button {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      text-align: center;
       z-index: 10;
-      transition: opacity 0.5s ease;
-      opacity: 1;
     }
     .cta-button {
       background-color: orange;
@@ -37,21 +35,43 @@
       border-radius: 5px;
       text-transform: uppercase;
       transition: background-color 0.3s ease;
-      -webkit-appearance: none;
-      margin-bottom: 20px;
     }
     .cta-button:active {
       background-color: darkorange;
     }
+    #menu-button {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      background-color: white;
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 5px;
+      z-index: 10;
+      cursor: pointer;
+    }
+    #menu-options {
+      position: absolute;
+      bottom: 70px;
+      right: 20px;
+      background-color: white;
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 5px;
+      z-index: 10;
+      display: none;
+    }
+    #menu-options button {
+      display: block;
+      background: none;
+      border: none;
+      padding: 8px 0;
+      text-align: left;
+      width: 100%;
+      cursor: pointer;
+    }
     .info-window {
       font-family: sans-serif;
-    }
-    .menu-buttons {
-      margin-top: 10px;
-    }
-    .menu-buttons a {
-      text-decoration: none;
-      margin: 0 5px;
     }
     .status-bar {
       display: flex;
@@ -64,107 +84,82 @@
       border-radius: 2px;
       background-color: lightgray;
     }
-    .active-red {
-      background-color: red;
-    }
-    .active-yellow {
-      background-color: gold;
-    }
-    .active-green {
-      background-color: mediumseagreen;
-    }
+    .active-red { background-color: red; }
+    .active-yellow { background-color: gold; }
+    .active-green { background-color: mediumseagreen; }
   </style>
 </head>
 <body>
   <div id="map"></div>
 
-  <div id="button-container">
-    <a href="tel:+14356024304">
-      <button class="cta-button">Call the Cactus</button>
-    </a>
-    <br />
-    <a href="sms:+14356024304">
-      <button class="cta-button">Text the Cactus</button>
-    </a>
-    <br />
-    <a href="about.html">
-      <button class="cta-button">Or... Learn More</button>
-    </a>
+  <div id="main-call-button">
+    <button class="cta-button" id="call-the-cowboy">Call the Cowboy</button>
+  </div>
+
+  <div id="menu-button">
+    &#9776;
+  </div>
+
+  <div id="menu-options">
+    <button id="toggle-view">List View</button>
+    <button onclick="window.location.href='tel:+14356024304'">Call</button>
+    <button onclick="window.location.href='sms:+14356024304'">Text</button>
+    <button onclick="window.location.href='about.html'">About</button>
   </div>
 
   <script>
+    const statusColors = {
+      1: 'red',
+      2: 'gold',
+      3: 'green'
+    };
+
+    const locations = [
+      { lat: 40.63187478288313, lng: -111.488077538129840, title: "Hopkins", status: 3 },
+      { lat: 40.79079537119528, lng: -111.8870219260070734, title: "Cosby", status: 1 },
+      { lat: 40.66657863620859, lng: -111.4940910476343136, title: "Tanner", status: 3 },
+      { lat: 40.65040926474864, lng: -111.3141574976087539, title: "Hennessy", status: 2 },
+      { lat: 40.70017011307595, lng: -111.5490344880542347, title: "Barrick", status: 1 },
+      { lat: 40.7672909767582, lng: -111.5279312398168232, title: "Goldsmith", status: 2 }
+    ];
+
+    let map;
+    let infoWindows = [];
+    let markers = [];
+
     function initMap() {
-      const map = new google.maps.Map(document.getElementById("map"), {
+      map = new google.maps.Map(document.getElementById("map"), {
         zoom: 10,
         center: { lat: 40.7, lng: -111.8 },
         disableDefaultUI: true
       });
 
-      const locations = [
-        { lat: 40.63187478288313, lng: -111.488077538129840, title: "Hopkins", status: 3 },
-        { lat: 40.79079537119528, lng: -111.8870219260070734, title: "Cosby", status: 1 },
-        { lat: 40.66657863620859, lng: -111.4940910476343136, title: "Tanner", status: 3 },
-        { lat: 40.65040926474864, lng: -111.3141574976087539, title: "Hennessy", status: 2 },
-        { lat: 40.70017011307595, lng: -111.5490344880542347, title: "Barrick", status: 1 },
-        { lat: 40.7672909767582, lng: -111.5279312398168232, title: "Goldsmith", status: 2 }
-      ];
-
       const bounds = new google.maps.LatLngBounds();
-      let infoWindows = [];
-      let showTitles = false;
 
-      const menu = document.getElementById("button-container");
-      let timeout;
-
-      function hideMenu() {
-        menu.style.opacity = 0;
-      }
-
-      function showMenu() {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => {
-          menu.style.opacity = 1;
-        }, 1000);
-      }
-
-      map.addListener("dragstart", hideMenu);
-      map.addListener("zoom_changed", hideMenu);
-      map.addListener("idle", showMenu);
-
-      // Toggle all titles on map click
-      map.addListener("click", () => {
-        infoWindows.forEach(iw => iw.close());
-        if (!showTitles) {
-          locations.forEach((loc, index) => {
-            const iw = new google.maps.InfoWindow({
-              content: `<div class="info-window"><strong>${loc.title}</strong></div>`
-            });
-            iw.open(map, markers[index]);
-            infoWindows[index] = iw;
-          });
-        } else {
-          infoWindows.forEach(iw => iw.close());
-        }
-        showTitles = !showTitles;
-      });
-
-      const markers = locations.map((loc, i) => {
+      locations.forEach(loc => {
+        const iconColor = statusColors[loc.status];
         const marker = new google.maps.Marker({
           position: { lat: loc.lat, lng: loc.lng },
           map,
-          title: loc.title
+          title: loc.title,
+          icon: {
+            path: 'M8 0c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2s2-.9 2-2V2c0-1.1-.9-2-2-2z',
+            fillColor: iconColor,
+            fillOpacity: 1,
+            strokeWeight: 0,
+            scale: 2,
+            anchor: new google.maps.Point(8, 16)
+          }
         });
-        bounds.extend(marker.getPosition());
 
-        let statusHTML = '<div class="status-bar">';
-        for (let j = 1; j <= 3; j++) {
-          let className = 'bar';
-          if (loc.status === 1 && j === 1) className += ' active-red';
-          if (loc.status === 2 && j <= 2) className += ' active-yellow';
-          if (loc.status === 3) className += ' active-green';
-          statusHTML += `<div class="${className}"></div>`;
-        }
-        statusHTML += '</div>';
+        const statusHTML = '<div class="status-bar">' +
+          Array.from({ length: 3 }, (_, i) => {
+            let className = 'bar';
+            if (loc.status === 1 && i === 0) className += ' active-red';
+            if (loc.status === 2 && i < 2) className += ' active-yellow';
+            if (loc.status === 3) className += ' active-green';
+            return `<div class="${className}"></div>`;
+          }).join('') + '</div>';
 
         const infoWindow = new google.maps.InfoWindow({
           content: `<div class="info-window">
@@ -182,18 +177,43 @@
         marker.addListener("click", () => {
           infoWindows.forEach(iw => iw.close());
           infoWindow.open(map, marker);
-          infoWindows[i] = infoWindow;
         });
 
-        return marker;
+        markers.push(marker);
+        infoWindows.push(infoWindow);
+        bounds.extend(marker.getPosition());
       });
 
       map.fitBounds(bounds);
+
+      const callButton = document.getElementById('main-call-button');
+
+      map.addListener("dragstart", () => {
+        callButton.style.display = "none";
+      });
+      map.addListener("zoom_changed", () => {
+        callButton.style.display = "none";
+      });
+
+      const menuToggle = document.getElementById('menu-button');
+      const menuOptions = document.getElementById('menu-options');
+
+      menuToggle.addEventListener("click", () => {
+        menuOptions.style.display = menuOptions.style.display === "block" ? "none" : "block";
+      });
+
+      const toggleViewButton = document.getElementById('toggle-view');
+      let inListView = false;
+      toggleViewButton.addEventListener("click", () => {
+        inListView = !inListView;
+        toggleViewButton.textContent = inListView ? "Map View" : "List View";
+        alert("This would toggle to " + (inListView ? "list" : "map") + " view.");
+      });
     }
   </script>
 
   <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCy0CmR2bZF9YBNfSGX5hZ-wK1MD1AwOu0&callback=initMap">
+    src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap">
   </script>
 </body>
 </html>
