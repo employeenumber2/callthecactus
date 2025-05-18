@@ -45,14 +45,18 @@
       right: 20px;
       background-color: white;
       border: 1px solid #ccc;
-      padding: 10px;
+      padding: 20px; /* doubled size */
       border-radius: 5px;
       z-index: 10;
       cursor: pointer;
+      font-size: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     #menu-options {
       position: absolute;
-      bottom: 70px;
+      bottom: 100px;
       right: 20px;
       background-color: white;
       border: 1px solid #ccc;
@@ -131,25 +135,17 @@
       map = new google.maps.Map(document.getElementById("map"), {
         zoom: 10,
         center: { lat: 40.7, lng: -111.8 },
-        disableDefaultUI: true
+        disableDefaultUI: true,
+        gestureHandling: "greedy" // ensures pinch and scroll zoom works
       });
 
       const bounds = new google.maps.LatLngBounds();
 
       locations.forEach(loc => {
-        const iconColor = statusColors[loc.status];
         const marker = new google.maps.Marker({
           position: { lat: loc.lat, lng: loc.lng },
           map,
-          title: loc.title,
-          icon: {
-            path: 'M8 0c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2s2-.9 2-2V2c0-1.1-.9-2-2-2z',
-            fillColor: iconColor,
-            fillOpacity: 1,
-            strokeWeight: 0,
-            scale: 2,
-            anchor: new google.maps.Point(8, 16)
-          }
+          title: loc.title
         });
 
         const statusHTML = '<div class="status-bar">' +
@@ -195,6 +191,17 @@
         callButton.style.display = "none";
       });
 
+      // Show all markers' info windows on map click
+      map.addListener("click", (e) => {
+        const isMarkerClick = markers.some(marker => {
+          const markerPos = marker.getPosition();
+          return google.maps.geometry.spherical.computeDistanceBetween(markerPos, e.latLng) < 20;
+        });
+        if (!isMarkerClick) {
+          infoWindows.forEach((iw, i) => iw.open(map, markers[i]));
+        }
+      });
+
       const menuToggle = document.getElementById('menu-button');
       const menuOptions = document.getElementById('menu-options');
 
@@ -213,7 +220,7 @@
   </script>
 
   <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCy0CmR2bZF9YBNfSGX5hZ-wK1MD1AwOu0&callback=initMap">
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCy0CmR2bZF9YBNfSGX5hZ-wK1MD1AwOu0&callback=initMap&libraries=geometry">
   </script>
 </body>
 </html>
