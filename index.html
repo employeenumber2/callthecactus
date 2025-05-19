@@ -45,7 +45,7 @@
       right: 20px;
       background-color: white;
       border: 1px solid #ccc;
-      padding: 20px; /* doubled size */
+      padding: 20px;
       border-radius: 5px;
       z-index: 10;
       cursor: pointer;
@@ -100,9 +100,7 @@
     <button class="cta-button" id="call-the-cowboy">Call the Cowboy</button>
   </div>
 
-  <div id="menu-button">
-    &#9776;
-  </div>
+  <div id="menu-button">&#9776;</div>
 
   <div id="menu-options">
     <button id="toggle-view">List View</button>
@@ -136,7 +134,7 @@
         zoom: 10,
         center: { lat: 40.7, lng: -111.8 },
         disableDefaultUI: true,
-        gestureHandling: "greedy" // ensures pinch and scroll zoom works
+        gestureHandling: "greedy"
       });
 
       const bounds = new google.maps.LatLngBounds();
@@ -183,7 +181,6 @@
       map.fitBounds(bounds);
 
       const callButton = document.getElementById('main-call-button');
-
       map.addListener("dragstart", () => {
         callButton.style.display = "none";
       });
@@ -191,14 +188,21 @@
         callButton.style.display = "none";
       });
 
-      // Show all markers' info windows on map click
       map.addListener("click", (e) => {
         const isMarkerClick = markers.some(marker => {
           const markerPos = marker.getPosition();
           return google.maps.geometry.spherical.computeDistanceBetween(markerPos, e.latLng) < 20;
         });
+
         if (!isMarkerClick) {
-          infoWindows.forEach((iw, i) => iw.open(map, markers[i]));
+          const anyOpen = infoWindows.some(iw => iw.getMap());
+          infoWindows.forEach((iw, i) => {
+            if (anyOpen) {
+              iw.close();
+            } else {
+              iw.open(map, markers[i]);
+            }
+          });
         }
       });
 
@@ -216,7 +220,23 @@
         toggleViewButton.textContent = inListView ? "Map View" : "List View";
         alert("This would toggle to " + (inListView ? "list" : "map") + " view.");
       });
+
+      // Remove the InfoWindow close (X) button
+      const style = document.createElement('style');
+      style.innerHTML = `
+        .gm-ui-hover-effect {
+          display: none !important;
+        }
+      `;
+      document.head.appendChild(style);
     }
+
+    // Prevent pinch-to-zoom on desktop (e.g., trackpad with Ctrl)
+    window.addEventListener("wheel", function(e) {
+      if (e.ctrlKey) {
+        e.preventDefault();
+      }
+    }, { passive: false });
   </script>
 
   <script async defer
