@@ -5,23 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Call the Cactus</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    html, body {
-      height: 100%;
-      overflow: hidden;
-    }
-    #map {
-      height: 100%;
-      width: 100%;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; overflow: hidden; }
+    #map { height: 100%; width: 100%; }
     #main-call-button {
       position: absolute;
-      top: 50%;
-      left: 50%;
+      top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       z-index: 10;
     }
@@ -34,30 +23,23 @@
       cursor: pointer;
       border-radius: 5px;
       text-transform: uppercase;
-      transition: background-color 0.3s ease;
     }
-    .cta-button:active {
-      background-color: darkorange;
-    }
+    .cta-button:active { background-color: darkorange; }
     #menu-button {
       position: absolute;
-      bottom: 20px;
-      right: 20px;
+      bottom: 20px; right: 20px;
       background-color: white;
       border: 1px solid #ccc;
       padding: 20px;
       border-radius: 5px;
       z-index: 10;
-      cursor: pointer;
       font-size: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
     }
     #menu-options {
       position: absolute;
-      bottom: 100px;
-      right: 20px;
+      bottom: 100px; right: 20px;
       background-color: white;
       border: 1px solid #ccc;
       padding: 10px;
@@ -66,31 +48,13 @@
       display: none;
     }
     #menu-options button {
-      display: block;
       background: none;
       border: none;
       padding: 8px 0;
-      text-align: left;
       width: 100%;
       cursor: pointer;
+      text-align: left;
     }
-    .info-window {
-      font-family: sans-serif;
-    }
-    .status-bar {
-      display: flex;
-      gap: 4px;
-      margin-bottom: 5px;
-    }
-    .bar {
-      width: 20px;
-      height: 5px;
-      border-radius: 2px;
-      background-color: lightgray;
-    }
-    .active-red { background-color: red; }
-    .active-yellow { background-color: gold; }
-    .active-green { background-color: mediumseagreen; }
   </style>
 </head>
 <body>
@@ -110,12 +74,6 @@
   </div>
 
   <script>
-    const statusColors = {
-      1: 'red',
-      2: 'gold',
-      3: 'green'
-    };
-
     const locations = [
       { lat: 40.63187478288313, lng: -111.488077538129840, title: "Hopkins", status: 3 },
       { lat: 40.79079537119528, lng: -111.8870219260070734, title: "Cosby", status: 1 },
@@ -126,13 +84,13 @@
     ];
 
     let map;
-    let infoWindows = [];
     let markers = [];
+    let infoWindows = [];
 
     function initMap() {
       map = new google.maps.Map(document.getElementById("map"), {
-        zoom: 10,
         center: { lat: 40.7, lng: -111.8 },
+        zoom: 10,
         disableDefaultUI: true,
         gestureHandling: "greedy"
       });
@@ -146,27 +104,28 @@
           title: loc.title
         });
 
-        const statusHTML = '<div class="status-bar">' +
-          Array.from({ length: 3 }, (_, i) => {
-            let className = 'bar';
-            if (loc.status === 1 && i === 0) className += ' active-red';
-            if (loc.status === 2 && i < 2) className += ' active-yellow';
-            if (loc.status === 3) className += ' active-green';
-            return `<div class="${className}"></div>`;
-          }).join('') + '</div>';
+        const bars = [...Array(3)].map((_, i) => {
+          let color = 'lightgray';
+          if (loc.status === 1 && i === 0) color = 'red';
+          if (loc.status === 2 && i < 2) color = 'gold';
+          if (loc.status === 3) color = 'mediumseagreen';
+          return `<div style="width: 20px; height: 5px; background: ${color}; border-radius: 2px;"></div>`;
+        }).join('');
 
-        const infoWindow = new google.maps.InfoWindow({
-          content: `<div class="info-window">
-                      ${statusHTML}
-                      <strong>${loc.title}</strong>
-                      <div class="menu-buttons">
-                        <a href="#">Project Info</a> |
-                        <a href="#">Cameras</a> |
-                        <a href="tel:+14356024304">Call</a> |
-                        <a href="sms:+14356024304">Text</a>
-                      </div>
-                    </div>`
-        });
+        const content = `
+          <div style="font-family: sans-serif;">
+            <div style="display: flex; gap: 4px; margin-bottom: 5px;">${bars}</div>
+            <strong>${loc.title}</strong>
+            <div>
+              <a href="#">Project Info</a> |
+              <a href="#">Cameras</a> |
+              <a href="tel:+14356024304">Call</a> |
+              <a href="sms:+14356024304">Text</a>
+            </div>
+          </div>
+        `;
+
+        const infoWindow = new google.maps.InfoWindow({ content });
 
         marker.addListener("click", () => {
           infoWindows.forEach(iw => iw.close());
@@ -180,63 +139,109 @@
 
       map.fitBounds(bounds);
 
-      const callButton = document.getElementById('main-call-button');
-      map.addListener("dragstart", () => {
-        callButton.style.display = "none";
-      });
-      map.addListener("zoom_changed", () => {
-        callButton.style.display = "none";
-      });
-
       map.addListener("click", (e) => {
-        const isMarkerClick = markers.some(marker => {
-          const markerPos = marker.getPosition();
-          return google.maps.geometry.spherical.computeDistanceBetween(markerPos, e.latLng) < 20;
+        const clickedMarker = markers.some(marker => {
+          const pos = marker.getPosition();
+          return google.maps.geometry.spherical.computeDistanceBetween(pos, e.latLng) < 20;
         });
-
-        if (!isMarkerClick) {
+        if (!clickedMarker) {
           const anyOpen = infoWindows.some(iw => iw.getMap());
           infoWindows.forEach((iw, i) => {
-            if (anyOpen) {
-              iw.close();
-            } else {
-              iw.open(map, markers[i]);
-            }
+            anyOpen ? iw.close() : iw.open(map, markers[i]);
           });
         }
       });
 
+      // Hide call button on zoom or drag
+      const callButton = document.getElementById('main-call-button');
+      map.addListener("dragstart", () => callButton.style.display = "none");
+      map.addListener("zoom_changed", () => callButton.style.display = "none");
+
+      // Hamburger menu
       const menuToggle = document.getElementById('menu-button');
       const menuOptions = document.getElementById('menu-options');
-
       menuToggle.addEventListener("click", () => {
         menuOptions.style.display = menuOptions.style.display === "block" ? "none" : "block";
       });
+
+      // Remove close button on InfoWindows
+      const style = document.createElement('style');
+      style.innerHTML = `.gm-ui-hover-effect { display: none !important; }`;
+      document.head.appendChild(style);
+
+      // Disable pinch-to-zoom on desktop
+      window.addEventListener("wheel", function(e) {
+        if (e.ctrlKey) e.preventDefault();
+      }, { passive: false });
+
+      // Add ACME Construction box
+      const acmeBox = document.createElement('div');
+      acmeBox.style.position = 'absolute';
+      acmeBox.style.bottom = '20px';
+      acmeBox.style.left = '20px';
+      acmeBox.style.backgroundColor = 'white';
+      acmeBox.style.border = '1px solid #ccc';
+      acmeBox.style.borderRadius = '5px';
+      acmeBox.style.padding = '10px';
+      acmeBox.style.fontFamily = 'sans-serif';
+      acmeBox.style.zIndex = '10';
+      acmeBox.innerHTML = `
+        <div style="font-weight: bold;">ACME Construction</div>
+        <a href="#" style="color: blue; text-decoration: underline; font-size: 0.9em;">Sign out</a>
+      `;
+      document.body.appendChild(acmeBox);
+
+      // List View
+      const listViewContainer = document.createElement('div');
+      listViewContainer.id = 'list-view';
+      Object.assign(listViewContainer.style, {
+        position: 'absolute',
+        top: '0', left: '0',
+        width: '100%', height: '100%',
+        overflowY: 'scroll',
+        backgroundColor: 'white',
+        zIndex: '9',
+        display: 'none',
+        padding: '20px'
+      });
+      document.body.appendChild(listViewContainer);
+
+      function renderListView() {
+        listViewContainer.innerHTML = '<h2>Project List</h2>';
+        locations.forEach(loc => {
+          const container = document.createElement('div');
+          container.style.marginBottom = '20px';
+          const statusBar = [...Array(3)].map((_, i) => {
+            let color = 'lightgray';
+            if (loc.status === 1 && i === 0) color = 'red';
+            if (loc.status === 2 && i < 2) color = 'gold';
+            if (loc.status === 3) color = 'mediumseagreen';
+            return `<div style="width: 20px; height: 5px; background: ${color}; border-radius: 2px;"></div>`;
+          }).join('');
+          container.innerHTML = `
+            <div style="font-weight: bold; font-size: 1.2em;">${loc.title}</div>
+            <div style="display: flex; gap: 4px; margin: 4px 0;">${statusBar}</div>
+            <div>
+              <a href="#">Project Info</a> |
+              <a href="#">Cameras</a> |
+              <a href="tel:+14356024304">Call</a> |
+              <a href="sms:+14356024304">Text</a>
+            </div>
+          `;
+          listViewContainer.appendChild(container);
+        });
+      }
 
       const toggleViewButton = document.getElementById('toggle-view');
       let inListView = false;
       toggleViewButton.addEventListener("click", () => {
         inListView = !inListView;
         toggleViewButton.textContent = inListView ? "Map View" : "List View";
-        alert("This would toggle to " + (inListView ? "list" : "map") + " view.");
+        document.getElementById("map").style.display = inListView ? "none" : "block";
+        listViewContainer.style.display = inListView ? "block" : "none";
+        if (inListView) renderListView();
       });
-
-      // Remove the InfoWindow close (X) button
-      const style = document.createElement('style');
-      style.innerHTML = `
-        .gm-ui-hover-effect {
-          display: none !important;
-        }
-      `;
-      document.head.appendChild(style);
     }
-
-    // Prevent pinch-to-zoom on desktop (e.g., trackpad with Ctrl)
-    window.addEventListener("wheel", function(e) {
-      if (e.ctrlKey) {
-        e.preventDefault();
-      }
-    }, { passive: false });
   </script>
 
   <script async defer
