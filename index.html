@@ -83,9 +83,7 @@
       { lat: 40.7672909767582, lng: -111.5279312398168232, title: "Goldsmith", status: 2 }
     ];
 
-    let map;
-    let markers = [];
-    let infoWindows = [];
+    let map, markers = [], infoWindows = [];
 
     function initMap() {
       map = new google.maps.Map(document.getElementById("map"), {
@@ -104,7 +102,7 @@
           title: loc.title
         });
 
-        const bars = [...Array(3)].map((_, i) => {
+        const statusHTML = [...Array(3)].map((_, i) => {
           let color = 'lightgray';
           if (loc.status === 1 && i === 0) color = 'red';
           if (loc.status === 2 && i < 2) color = 'gold';
@@ -114,19 +112,18 @@
 
         const content = `
           <div style="font-family: sans-serif;">
-            <div style="display: flex; gap: 4px; margin-bottom: 5px;">${bars}</div>
+            <div style="display: flex; gap: 4px; margin-bottom: 5px;">${statusHTML}</div>
             <strong>${loc.title}</strong>
             <div>
-              <a href="#">Project Info</a> |
-              <a href="#">Cameras</a> |
               <a href="tel:+14356024304">Call</a> |
-              <a href="sms:+14356024304">Text</a>
+              <a href="sms:+14356024304">Text</a> |
+              <a href="#">Cameras</a> |
+              <a href="#">Info</a>
             </div>
           </div>
         `;
 
         const infoWindow = new google.maps.InfoWindow({ content });
-
         marker.addListener("click", () => {
           infoWindows.forEach(iw => iw.close());
           infoWindow.open(map, marker);
@@ -139,16 +136,16 @@
 
       map.fitBounds(bounds);
 
+      // Toggle info windows on background click
       map.addListener("click", (e) => {
-        const clickedMarker = markers.some(marker => {
-          const pos = marker.getPosition();
-          return google.maps.geometry.spherical.computeDistanceBetween(pos, e.latLng) < 20;
-        });
+        const clickedMarker = markers.some(marker =>
+          google.maps.geometry.spherical.computeDistanceBetween(marker.getPosition(), e.latLng) < 20
+        );
         if (!clickedMarker) {
           const anyOpen = infoWindows.some(iw => iw.getMap());
-          infoWindows.forEach((iw, i) => {
-            anyOpen ? iw.close() : iw.open(map, markers[i]);
-          });
+          infoWindows.forEach((iw, i) =>
+            anyOpen ? iw.close() : iw.open(map, markers[i])
+          );
         }
       });
 
@@ -157,24 +154,24 @@
       map.addListener("dragstart", () => callButton.style.display = "none");
       map.addListener("zoom_changed", () => callButton.style.display = "none");
 
-      // Hamburger menu
+      // Hamburger menu toggle
       const menuToggle = document.getElementById('menu-button');
       const menuOptions = document.getElementById('menu-options');
       menuToggle.addEventListener("click", () => {
         menuOptions.style.display = menuOptions.style.display === "block" ? "none" : "block";
       });
 
-      // Remove close button on InfoWindows
+      // Remove InfoWindow (X)
       const style = document.createElement('style');
       style.innerHTML = `.gm-ui-hover-effect { display: none !important; }`;
       document.head.appendChild(style);
 
-      // Disable pinch-to-zoom on desktop
+      // Disable pinch zoom (desktop trackpad)
       window.addEventListener("wheel", function(e) {
         if (e.ctrlKey) e.preventDefault();
       }, { passive: false });
 
-      // Add ACME Construction box
+      // ACME Construction box
       const acmeBox = document.createElement('div');
       acmeBox.style.position = 'absolute';
       acmeBox.style.bottom = '20px';
@@ -191,9 +188,8 @@
       `;
       document.body.appendChild(acmeBox);
 
-      // List View
+      // List view rendering
       const listViewContainer = document.createElement('div');
-      listViewContainer.id = 'list-view';
       Object.assign(listViewContainer.style, {
         position: 'absolute',
         top: '0', left: '0',
@@ -204,31 +200,32 @@
         display: 'none',
         padding: '20px'
       });
+      listViewContainer.id = 'list-view';
       document.body.appendChild(listViewContainer);
 
       function renderListView() {
         listViewContainer.innerHTML = '<h2>Project List</h2>';
         locations.forEach(loc => {
-          const container = document.createElement('div');
-          container.style.marginBottom = '20px';
-          const statusBar = [...Array(3)].map((_, i) => {
+          const bars = [...Array(3)].map((_, i) => {
             let color = 'lightgray';
             if (loc.status === 1 && i === 0) color = 'red';
             if (loc.status === 2 && i < 2) color = 'gold';
             if (loc.status === 3) color = 'mediumseagreen';
             return `<div style="width: 20px; height: 5px; background: ${color}; border-radius: 2px;"></div>`;
           }).join('');
-          container.innerHTML = `
+          const entry = document.createElement('div');
+          entry.style.marginBottom = '20px';
+          entry.innerHTML = `
             <div style="font-weight: bold; font-size: 1.2em;">${loc.title}</div>
-            <div style="display: flex; gap: 4px; margin: 4px 0;">${statusBar}</div>
+            <div style="display: flex; gap: 4px; margin: 4px 0;">${bars}</div>
             <div>
-              <a href="#">Project Info</a> |
-              <a href="#">Cameras</a> |
               <a href="tel:+14356024304">Call</a> |
-              <a href="sms:+14356024304">Text</a>
+              <a href="sms:+14356024304">Text</a> |
+              <a href="#">Cameras</a> |
+              <a href="#">Info</a>
             </div>
           `;
-          listViewContainer.appendChild(container);
+          listViewContainer.appendChild(entry);
         });
       }
 
